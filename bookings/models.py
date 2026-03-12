@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.db.models import Q
 from events.models import Event
 import uuid
 
@@ -12,18 +13,42 @@ class Booking(models.Model):
     ]
 
     booking_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='bookings')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='bookings'
+    )
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name='bookings'
+    )
+
     quantity = models.PositiveIntegerField(default=1)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='confirmed')
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='confirmed'
+    )
+
     booked_at = models.DateTimeField(auto_now_add=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
+
     notes = models.TextField(blank=True)
 
     class Meta:
         ordering = ['-booked_at']
-        unique_together = ['user', 'event']  # prevent duplicate bookings
+
+        # Only prevent duplicate CONFIRMED bookings
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'event'],
+                condition=Q(status='confirmed'),
+                name='unique_confirmed_booking'
+            )
+        ]
 
     def __str__(self):
         return f"Booking #{str(self.booking_id)[:8]} - {self.user.username} @ {self.event.title}"
