@@ -1,0 +1,10 @@
+[
+  {"model": "events.category", "pk": 1, "fields": {"name": "Technology", "slug": "technology", "icon": "💻", "color": "#4ecdc4"}},
+  {"model": "events.category", "pk": 2, "fields": {"name": "Music", "slug": "music", "icon": "🎵", "color": "#e8c547"}},
+  {"model": "events.category", "pk": 3, "fields": {"name": "Business", "slug": "business", "icon": "💼", "color": "#64a0ff"}},
+  {"model": "events.category", "pk": 4, "fields": {"name": "Arts & Culture", "slug": "arts-culture", "icon": "🎨", "color": "#ff6b6b"}},
+  {"model": "events.category", "pk": 5, "fields": {"name": "Sports", "slug": "sports", "icon": "⚽", "color": "#ffa94d"}},
+  {"model": "events.category", "pk": 6, "fields": {"name": "Food & Drink", "slug": "food-drink", "icon": "🍷", "color": "#e8c547"}},
+  {"model": "events.category", "pk": 7, "fields": {"name": "Education", "slug": "education", "icon": "📚", "color": "#4ecdc4"}},
+  {"model": "events.category", "pk": 8, "fields": {"name": "Health & Wellness", "slug": "health-wellness", "icon": "🧘", "color": "#a8e063"}}
+]

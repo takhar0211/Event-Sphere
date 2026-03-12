@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Event — EventSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:40px;padding-bottom:80px;max-width:860px;">
+  <div class="page-header">
+    <h1 class="page-title">{{ action }} Event</h1>
+    <p class="page-subtitle">{% if action == 'Create' %}Fill in the details to publish your event{% else %}Update your event information{% endif %}</p>
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+
+      <!-- LEFT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div class="card card-body">
+          <h3 style="margin-bottom:20px;font-size:18px;">Basic Information</h3>
+
+          <div class="form-group">
+            <label class="form-label">Event Title *</label>
+            <input type="text" name="title" class="form-control" value="{{ form.title.value|default:'' }}" placeholder="e.g. Annual Tech Summit 2025" required>
+            {% if form.title.errors %}<div class="form-error">{{ form.title.errors|join:", " }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description *</label>
+            <textarea name="description" class="form-control" rows="6" placeholder="Tell attendees what to expect..." required>{{ form.description.value|default:'' }}</textarea>
+            {% if form.description.errors %}<div class="form-error">{{ form.description.errors|join:", " }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-control">
+              <option value="">— Select Category —</option>
+              {% for cat in form.category.field.queryset %}
+                <option value="{{ cat.pk }}" {% if form.category.value == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Event Image</label>
+            <input type="file" name="image" class="form-control" accept="image/*">
+            {% if event and event.image %}
+              <div style="margin-top:8px;">
+                <img src="{{ event.image.url }}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;">
+                <div class="form-hint">Current image. Upload new to replace.</div>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-control">
+              <option value="published" {% if form.status.value == 'published' %}selected{% endif %}>✅ Published</option>
+              <option value="draft" {% if form.status.value == 'draft' %}selected{% endif %}>📝 Draft</option>
+              <option value="cancelled" {% if form.status.value == 'cancelled' %}selected{% endif %}>❌ Cancelled</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div class="card card-body">
+          <h3 style="margin-bottom:20px;font-size:18px;">Date & Location</h3>
+
+          <div class="form-group">
+            <label class="form-label">Event Date *</label>
+            <input type="date" name="date" class="form-control" value="{{ form.date.value|default:'' }}" required>
+            {% if form.date.errors %}<div class="form-error">{{ form.date.errors|join:", " }}</div>{% endif %}
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="form-group">
+              <label class="form-label">Start Time *</label>
+              <input type="time" name="time" class="form-control" value="{{ form.time.value|default:'' }}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">End Time</label>
+              <input type="time" name="end_time" class="form-control" value="{{ form.end_time.value|default:'' }}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Location / Address *</label>
+            <input type="text" name="location" class="form-control" value="{{ form.location.value|default:'' }}" placeholder="City, Address..." required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Venue Name</label>
+            <input type="text" name="venue_name" class="form-control" value="{{ form.venue_name.value|default:'' }}" placeholder="e.g. Convention Center Hall A">
+          </div>
+        </div>
+
+        <div class="card card-body">
+          <h3 style="margin-bottom:20px;font-size:18px;">Tickets & Pricing</h3>
+
+          <div class="form-group">
+            <label class="form-label">Ticket Price ($)</label>
+            <input type="number" name="ticket_price" class="form-control" value="{{ form.ticket_price.value|default:'0.00' }}" min="0" step="0.01" placeholder="0.00 for free events">
+            <div class="form-hint">Set to 0 for free events</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Maximum Attendees *</label>
+            <input type="number" name="max_attendees" class="form-control" value="{{ form.max_attendees.value|default:'100' }}" min="1" required>
+            {% if event %}
+              <div class="form-hint">{{ event.tickets_sold }} tickets already sold. Available will be adjusted automatically.</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;">
+          <button type="submit" class="btn btn-primary btn-lg" style="flex:1;justify-content:center;">
+            {% if action == 'Create' %}🚀 Publish Event{% else %}💾 Save Changes{% endif %}
+          </button>
+          <a href="{% if event %}{% url 'events:detail' event.pk %}{% else %}{% url 'dashboard:organizer_dashboard' %}{% endif %}" class="btn btn-ghost btn-lg">Cancel</a>
+        </div>
+      </div>
+    </div>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-error mt-4">{{ form.non_field_errors|join:", " }}</div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}EventSphere — Smart Event Management{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #08080f;
+      --surface: #111118;
+      --surface2: #18181f;
+      --surface3: #202028;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --accent: #e8c547;
+      --accent-dim: rgba(232,197,71,0.15);
+      --accent2: #ff6b6b;
+      --accent3: #4ecdc4;
+      --text: #f0eff4;
+      --text-muted: #7a7988;
+      --text-sub: #9997a8;
+      --success: #4ecdc4;
+      --danger: #ff6b6b;
+      --warning: #ffa94d;
+      --radius: 12px;
+      --radius-lg: 16px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+      --shadow-lg: 0 8px 48px rgba(0,0,0,0.6);
+      --nav-h: 68px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+    h1,h2,h3,h4,h5 { font-family: 'DM Serif Display', serif; line-height: 1.2; }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+
+    /* ── NAV ── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8,8,15,0.92); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: var(--nav-h);
+      display: flex; align-items: center;
+    }
+    .nav-inner {
+      max-width: 1280px; width: 100%; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; gap: 32px;
+    }
+    .nav-logo {
+      font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 4px; flex: 1; }
+    .nav-link {
+      padding: 7px 14px; border-radius: 8px; font-size: 14px; font-weight: 500;
+      color: var(--text-sub); transition: all 0.2s;
+    }
+    .nav-link:hover, .nav-link.active { color: var(--text); background: var(--surface2); }
+    .nav-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .nav-avatar {
+      width: 34px; height: 34px; border-radius: 50%; background: var(--accent-dim);
+      border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; color: var(--accent); cursor: pointer;
+    }
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius);
+      min-width: 200px; padding: 6px;
+      box-shadow: var(--shadow-lg);
+      opacity: 0; visibility: hidden; transform: translateY(-8px);
+      transition: all 0.2s;
+    }
+    .dropdown:hover .dropdown-menu,
+    .dropdown.open .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+    .dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 8px; font-size: 14px; color: var(--text-sub);
+      transition: all 0.15s; cursor: pointer;
+    }
+    .dropdown-item:hover { background: var(--surface2); color: var(--text); }
+    .dropdown-item.danger { color: var(--danger); }
+    .dropdown-item.danger:hover { background: rgba(255,107,107,0.1); }
+    .dropdown-divider { height: 1px; background: var(--border); margin: 5px 0; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+      cursor: pointer; border: none; transition: all 0.2s; white-space: nowrap;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--accent); color: #000; font-weight: 600; }
+    .btn-primary:hover { background: #f0d060; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(232,197,71,0.35); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border2); }
+    .btn-outline:hover { background: var(--surface2); border-color: rgba(255,255,255,0.2); }
+    .btn-ghost { background: transparent; color: var(--text-sub); }
+    .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+    .btn-danger { background: rgba(255,107,107,0.12); color: var(--danger); border: 1px solid rgba(255,107,107,0.25); }
+    .btn-danger:hover { background: rgba(255,107,107,0.2); }
+    .btn-success { background: rgba(78,205,196,0.12); color: var(--success); border: 1px solid rgba(78,205,196,0.25); }
+    .btn-success:hover { background: rgba(78,205,196,0.2); }
+    .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 6px; }
+    .btn-lg { padding: 13px 28px; font-size: 15px; border-radius: 10px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+    /* ── FORM INPUTS ── */
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-sub); margin-bottom: 6px; letter-spacing: 0.02em; }
+    .form-control {
+      width: 100%; padding: 11px 14px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+    }
+    .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,197,71,0.1); }
+    .form-control::placeholder { color: var(--text-muted); }
+    .form-control option { background: var(--surface2); }
+    select.form-control { cursor: pointer; }
+    textarea.form-control { resize: vertical; min-height: 100px; }
+    .form-error { font-size: 12px; color: var(--danger); margin-top: 5px; }
+    .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+    }
+    .card-body { padding: 24px; }
+    .card-header { padding: 20px 24px; border-bottom: 1px solid var(--border); }
+
+    /* ── EVENT CARD ── */
+    .event-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      display: flex; flex-direction: column;
+    }
+    .event-card:hover {
+      transform: translateY(-3px); border-color: var(--border2);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    }
+    .event-card-img {
+      width: 100%; height: 200px; object-fit: cover;
+      background: linear-gradient(135deg, var(--surface2) 0%, var(--surface3) 100%);
+    }
+    .event-card-img-placeholder {
+      width: 100%; height: 200px;
+      background: linear-gradient(135deg, var(--surface2) 0%, var(--surface3) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px;
+    }
+    .event-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+    .event-card-category { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+    .event-card-title { font-size: 18px; color: var(--text); line-height: 1.3; }
+    .event-card-meta { display: flex; flex-direction: column; gap: 5px; margin-top: auto; }
+    .event-meta-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-sub); }
+    .event-card-footer { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .event-price { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--accent); }
+    .event-price.free { color: var(--success); }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+    }
+    .badge-gold { background: rgba(232,197,71,0.12); color: var(--accent); border: 1px solid rgba(232,197,71,0.25); }
+    .badge-teal { background: rgba(78,205,196,0.12); color: var(--success); border: 1px solid rgba(78,205,196,0.25); }
+    .badge-red { background: rgba(255,107,107,0.12); color: var(--danger); border: 1px solid rgba(255,107,107,0.25); }
+    .badge-gray { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+    .badge-orange { background: rgba(255,169,77,0.12); color: var(--warning); border: 1px solid rgba(255,169,77,0.25); }
+
+    /* ── ALERTS / MESSAGES ── */
+    .alert {
+      padding: 14px 18px; border-radius: 10px; font-size: 14px;
+      display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px;
+    }
+    .alert-success { background: rgba(78,205,196,0.1); border: 1px solid rgba(78,205,196,0.25); color: var(--success); }
+    .alert-error, .alert-danger { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.25); color: var(--danger); }
+    .alert-warning { background: rgba(255,169,77,0.1); border: 1px solid rgba(255,169,77,0.25); color: var(--warning); }
+    .alert-info { background: rgba(100,160,255,0.1); border: 1px solid rgba(100,160,255,0.25); color: #64a0ff; }
+    .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── STAT CARDS ── */
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 24px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .stat-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+    .stat-value { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--text); }
+    .stat-icon { font-size: 28px; margin-bottom: 4px; }
+    .stat-change { font-size: 13px; color: var(--success); }
+
+    /* ── TABLES ── */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--surface2); }
+    th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); white-space: nowrap; }
+    td { padding: 14px 16px; font-size: 14px; color: var(--text-sub); border-top: 1px solid var(--border); white-space: nowrap; }
+    tbody tr:hover { background: var(--surface2); }
+    td a { color: var(--text); }
+    td a:hover { color: var(--accent); }
+
+    /* ── LAYOUT HELPERS ── */
+    .container { max-width: 1280px; width: 100%; margin: 0 auto; padding: 0 24px; }
+    .page-header { padding: 48px 0 32px; }
+    .page-title { font-size: clamp(28px, 4vw, 42px); margin-bottom: 8px; }
+    .page-subtitle { color: var(--text-muted); font-size: 16px; }
+    .section { padding: 64px 0; }
+    .section-title { font-size: clamp(24px, 3vw, 36px); margin-bottom: 8px; }
+    .section-sub { color: var(--text-muted); font-size: 15px; margin-bottom: 40px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+    .flex { display: flex; }
+    .flex-center { display: flex; align-items: center; }
+    .flex-between { display: flex; align-items: center; justify-content: space-between; }
+    .gap-2 { gap: 8px; }
+    .gap-3 { gap: 12px; }
+    .gap-4 { gap: 16px; }
+    .mt-2 { margin-top: 8px; }
+    .mt-4 { margin-top: 16px; }
+    .mt-6 { margin-top: 24px; }
+    .mb-4 { margin-bottom: 16px; }
+    .mb-6 { margin-bottom: 24px; }
+    .text-muted { color: var(--text-muted); }
+    .text-accent { color: var(--accent); }
+    .text-success { color: var(--success); }
+    .text-danger { color: var(--danger); }
+    .text-sm { font-size: 13px; }
+    .text-center { text-align: center; }
+    .fw-600 { font-weight: 600; }
+    .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+    /* ── PAGINATION ── */
+    .pagination { display: flex; align-items: center; gap: 6px; justify-content: center; margin-top: 40px; }
+    .page-link {
+      padding: 8px 14px; border-radius: 8px; font-size: 14px;
+      background: var(--surface); border: 1px solid var(--border); color: var(--text-sub);
+      transition: all 0.2s; cursor: pointer;
+    }
+    .page-link:hover, .page-link.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+
+    /* ── PROGRESS BAR ── */
+    .progress { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+    .progress-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.5s ease; }
+    .progress-bar.danger { background: var(--danger); }
+    .progress-bar.success { background: var(--success); }
+
+    /* ── FOOTER ── */
+    .footer {
+      border-top: 1px solid var(--border); margin-top: 80px;
+      padding: 48px 0 32px;
+    }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; }
+    .footer-brand { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 12px; }
+    .footer-brand span { color: var(--accent); }
+    .footer-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+    .footer-heading { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 16px; }
+    .footer-links { display: flex; flex-direction: column; gap: 10px; }
+    .footer-link { font-size: 14px; color: var(--text-sub); transition: color 0.2s; }
+    .footer-link:hover { color: var(--accent); }
+    .footer-bottom { border-top: 1px solid var(--border); margin-top: 40px; padding-top: 24px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--text-muted); }
+
+    /* ── SOLD OUT / UNAVAILABLE ── */
+    .sold-out-banner { background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.2); border-radius: 8px; padding: 12px 16px; color: var(--danger); font-size: 14px; text-align: center; }
+    .available-tickets { font-size: 13px; color: var(--text-muted); }
+    .available-tickets strong { color: var(--success); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state { text-align: center; padding: 64px 24px; }
+    .empty-icon { font-size: 56px; margin-bottom: 16px; }
+    .empty-title { font-size: 22px; margin-bottom: 8px; }
+    .empty-desc { color: var(--text-muted); font-size: 15px; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    .fade-up { animation: fadeUp 0.5s ease forwards; }
+    .fade-in { animation: fadeIn 0.4s ease forwards; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+      .grid-3 { grid-template-columns: repeat(2, 1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+      .grid-2-1 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .container { padding: 0 16px; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .section { padding: 40px 0; }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="{% url 'home' %}" class="nav-logo">Event<span>Sphere</span></a>
+    <div class="nav-links">
+      <a href="{% url 'home' %}" class="nav-link">Home</a>
+      <a href="{% url 'events:list' %}" class="nav-link">Browse Events</a>
+      {% for cat in all_categories %}
+        {% if forloop.counter <= 4 %}
+          <a href="{% url 'events:by_category' cat.slug %}" class="nav-link">{{ cat.icon }} {{ cat.name }}</a>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div class="nav-actions">
+      {% if user.is_authenticated %}
+        {% if user.is_organizer or user.is_superuser %}
+          <a href="{% url 'events:create' %}" class="btn btn-primary btn-sm">+ Create Event</a>
+        {% endif %}
+        <div class="dropdown">
+          <div class="nav-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+          <div class="dropdown-menu">
+            <div style="padding:12px 14px 8px;">
+              <div style="font-weight:600;font-size:14px;">{{ user.get_full_name|default:user.username }}</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">{{ user.email }}</div>
+              <span class="badge {% if user.role == 'admin' or user.is_superuser %}badge-gold{% elif user.role == 'organizer' %}badge-teal{% else %}badge-gray{% endif %}" style="margin-top:8px;">{{ user.role|upper }}</span>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="{% url 'accounts:profile' %}" class="dropdown-item">👤 My Profile</a>
+            {% if user.role == 'organizer' or user.is_superuser %}
+              <a href="{% url 'dashboard:organizer_dashboard' %}" class="dropdown-item">📊 Organizer Dashboard</a>
+            {% endif %}
+            {% if user.is_admin_user %}
+              <a href="{% url 'dashboard:admin_dashboard' %}" class="dropdown-item">🛡️ Admin Panel</a>
+            {% endif %}
+            <a href="{% url 'dashboard:user_dashboard' %}" class="dropdown-item">🎟️ My Bookings</a>
+            <div class="dropdown-divider"></div>
+            <a href="{% url 'accounts:logout' %}" class="dropdown-item danger">🚪 Logout</a>
+          </div>
+        </div>
+      {% else %}
+        <a href="{% url 'accounts:login' %}" class="btn btn-ghost btn-sm">Login</a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">Sign Up</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<!-- MESSAGES -->
+{% if messages %}
+<div style="max-width:1280px;margin:16px auto 0;padding:0 24px;">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+      <span class="alert-icon">
+        {% if message.tags == 'success' %}✅{% elif message.tags == 'error' or message.tags == 'danger' %}❌{% elif message.tags == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+      </span>
+      <span>{{ message }}</span>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- MAIN CONTENT -->
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">Event<span>Sphere</span></div>
+        <p class="footer-desc">The smartest way to discover, create, and manage events. From intimate gatherings to massive conferences.</p>
+      </div>
+      <div>
+        <div class="footer-heading">Explore</div>
+        <div class="footer-links">
+          <a href="{% url 'events:list' %}" class="footer-link">Browse Events</a>
+          {% for cat in all_categories %}
+            <a href="{% url 'events:by_category' cat.slug %}" class="footer-link">{{ cat.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+      <div>
+        <div class="footer-heading">Organizers</div>
+        <div class="footer-links">
+          <a href="{% url 'accounts:register_organizer' %}" class="footer-link">Create Account</a>
+          <a href="{% url 'events:create' %}" class="footer-link">Create Event</a>
+          <a href="{% url 'dashboard:organizer_dashboard' %}" class="footer-link">Dashboard</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-heading">Account</div>
+        <div class="footer-links">
+          <a href="{% url 'accounts:login' %}" class="footer-link">Sign In</a>
+          <a href="{% url 'accounts:register' %}" class="footer-link">Register</a>
+          <a href="{% url 'dashboard:user_dashboard' %}" class="footer-link">My Bookings</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 EventSphere. All rights reserved.</span>
+      <span>Built with Django 🐍</span>
+    </div>
+  </div>
+</footer>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

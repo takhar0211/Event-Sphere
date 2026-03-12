@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Browse Events — EventSphere{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">{% if category %}{{ category.icon }} {{ category.name }} Events{% else %}Browse Events{% endif %}</h1>
+    <p class="page-subtitle">{{ total }} event{{ total|pluralize }} found</p>
+  </div>
+
+  <!-- SEARCH & FILTERS -->
+  <form method="get" action="{% url 'events:list' %}">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:32px;">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:14px;align-items:end;flex-wrap:wrap;">
+        <div>
+          <label class="form-label">Search</label>
+          {{ form.q }}
+        </div>
+        <div>
+          <label class="form-label">Category</label>
+          {{ form.category }}
+        </div>
+        <div>
+          <label class="form-label">From Date</label>
+          {{ form.date_from }}
+        </div>
+        <div>
+          <label class="form-label">Sort By</label>
+          {{ form.sort }}
+        </div>
+        <div>
+          <button type="submit" class="btn btn-primary" style="height:43px;">Search</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px;">
+        <div>
+          <label class="form-label">To Date</label>
+          {{ form.date_to }}
+        </div>
+        <div>
+          <label class="form-label">Min Price ($)</label>
+          {{ form.price_min }}
+        </div>
+        <div>
+          <label class="form-label">Max Price ($)</label>
+          {{ form.price_max }}
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- CATEGORY PILLS -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px;">
+    <a href="{% url 'events:list' %}" class="badge badge-gray" style="padding:6px 14px;font-size:13px;cursor:pointer;text-decoration:none;">All</a>
+    {% for cat in categories %}
+      <a href="{% url 'events:by_category' cat.slug %}" class="badge {% if category and category.slug == cat.slug %}badge-gold{% else %}badge-gray{% endif %}"
+         style="padding:6px 14px;font-size:13px;cursor:pointer;text-decoration:none;">
+        {{ cat.icon }} {{ cat.name }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- EVENTS GRID -->
+  {% if events %}
+    <div class="grid-4">
+      {% for event in events %}
+        {% include 'events/_event_card.html' %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <h3 class="empty-title">No events found</h3>
+      <p class="empty-desc">Try adjusting your search or filters.</p>
+      <div class="mt-4">
+        <a href="{% url 'events:list' %}" class="btn btn-outline">Clear Filters</a>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .form-control { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px 13px; font-family:'DM Sans',sans-serif; font-size:14px; outline:none; }
+  .form-control:focus { border-color: var(--accent); }
+  select.form-control { cursor: pointer; }
+  @media(max-width:768px){ form > div > div:first-child { grid-template-columns: 1fr !important; } }
+</style>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}EventSphere — Discover Amazing Events{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section style="padding:80px 0 60px;background:linear-gradient(180deg, rgba(232,197,71,0.04) 0%, transparent 100%);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div style="max-width:680px;" class="fade-up">
+      <div class="badge badge-gold" style="margin-bottom:20px;">✨ The Smart Event Platform</div>
+      <h1 style="font-size:clamp(40px,6vw,72px);line-height:1.1;margin-bottom:20px;">
+        Discover Events<br>That <em style="color:var(--accent);">Move</em> You
+      </h1>
+      <p style="font-size:18px;color:var(--text-muted);margin-bottom:36px;line-height:1.7;">
+        From tech conferences to music festivals — browse, book, and experience events that matter. Or create your own and reach thousands.
+      </p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;">
+        <a href="{% url 'events:list' %}" class="btn btn-primary btn-lg">Explore Events →</a>
+        {% if user.is_authenticated and user.is_organizer %}
+          <a href="{% url 'events:create' %}" class="btn btn-outline btn-lg">+ Create Event</a>
+        {% elif user.is_authenticated and user.is_admin_user %}
+          <a href="{% url 'events:create' %}" class="btn btn-outline btn-lg">+ Create Event</a>
+        {% else %}
+          <a href="{% url 'accounts:register_organizer' %}" class="btn btn-outline btn-lg">Host an Event</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:flex;gap:40px;margin-top:56px;padding-top:40px;border-top:1px solid var(--border);flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'DM Serif Display',serif;font-size:36px;color:var(--accent);">{{ stats.total_events }}+</div>
+        <div style="font-size:14px;color:var(--text-muted);">Live Events</div>
+      </div>
+      <div>
+        <div style="font-family:'DM Serif Display',serif;font-size:36px;color:var(--accent);">{{ stats.total_categories }}+</div>
+        <div style="font-size:14px;color:var(--text-muted);">Categories</div>
+      </div>
+      <div>
+        <div style="font-family:'DM Serif Display',serif;font-size:36px;color:var(--accent);">{{ stats.total_bookings }}+</div>
+        <div style="font-size:14px;color:var(--text-muted);">Tickets Booked</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+{% if categories %}
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Browse by Category</h2>
+    <p class="section-sub">Find events in your favorite space</p>
+    <div class="grid-4">
+      {% for cat in categories %}
+      <a href="{% url 'events:by_category' cat.slug %}" style="
+        background:var(--surface);border:1px solid var(--border);
+        border-radius:var(--radius-lg);padding:28px 24px;
+        display:flex;flex-direction:column;align-items:flex-start;gap:10px;
+        transition:all 0.2s;text-decoration:none;
+      " onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)'">
+        <span style="font-size:36px;">{{ cat.icon }}</span>
+        <div>
+          <div style="font-weight:600;font-size:16px;color:var(--text);">{{ cat.name }}</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">{{ cat.events.count }} event{{ cat.events.count|pluralize }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- FEATURED EVENTS -->
+{% if featured %}
+<section class="section" style="border-top:1px solid var(--border);">
+  <div class="container">
+    <div class="flex-between mb-6">
+      <div>
+        <h2 class="section-title">Featured Events</h2>
+        <p style="color:var(--text-muted);font-size:15px;">Handpicked events you shouldn't miss</p>
+      </div>
+      <a href="{% url 'events:list' %}" class="btn btn-ghost">View All →</a>
+    </div>
+    <div class="grid-4">
+      {% for event in featured %}
+        {% include 'events/_event_card.html' %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- UPCOMING EVENTS -->
+<section class="section" style="border-top:1px solid var(--border);">
+  <div class="container">
+    <div class="flex-between mb-6">
+      <div>
+        <h2 class="section-title">Upcoming Events</h2>
+        <p style="color:var(--text-muted);font-size:15px;">Don't miss what's happening soon</p>
+      </div>
+      <a href="{% url 'events:list' %}" class="btn btn-ghost">See All →</a>
+    </div>
+    {% if upcoming %}
+      <div class="grid-4">
+        {% for event in upcoming %}
+          {% include 'events/_event_card.html' %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">📅</div>
+        <h3 class="empty-title">No events yet</h3>
+        <p class="empty-desc">Check back soon or create the first event!</p>
+        <div class="mt-4">
+          <a href="{% url 'accounts:register_organizer' %}" class="btn btn-primary">Become an Organizer</a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:80px 0;background:linear-gradient(135deg,rgba(232,197,71,0.06) 0%,rgba(78,205,196,0.06) 100%);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container text-center">
+    <h2 style="font-size:clamp(28px,4vw,48px);margin-bottom:16px;">Ready to Host Your Event?</h2>
+    <p style="color:var(--text-muted);font-size:17px;max-width:520px;margin:0 auto 36px;">Join thousands of organizers who use EventSphere to reach their audience and sell out their events.</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      {% if user.is_authenticated and user.is_organizer %}
+        <a href="{% url 'events:create' %}" class="btn btn-primary btn-lg">+ Create Event</a>
+      {% elif user.is_authenticated and user.is_admin_user %}
+        <a href="{% url 'events:create' %}" class="btn btn-primary btn-lg">+ Create Event</a>
+      {% else %}
+        <a href="{% url 'accounts:register_organizer' %}" class="btn btn-primary btn-lg">Start for Free</a>
+      {% endif %}
+      <a href="{% url 'events:list' %}" class="btn btn-outline btn-lg">Browse Events</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

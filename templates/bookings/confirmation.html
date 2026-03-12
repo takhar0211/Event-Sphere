@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Booking Confirmed! — EventSphere{% endblock %}
+{% block content %}
+<div style="min-height:60vh;display:flex;align-items:center;justify-content:center;padding:60px 20px;">
+  <div style="width:100%;max-width:560px;">
+
+    <div class="text-center" style="margin-bottom:32px;">
+      <div style="font-size:64px;margin-bottom:16px;">🎉</div>
+      <h1 style="font-size:32px;margin-bottom:8px;">Booking Confirmed!</h1>
+      <p style="color:var(--text-muted);">Your ticket has been reserved successfully.</p>
+    </div>
+
+    <!-- Ticket -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+      <!-- Ticket header -->
+      <div style="background:linear-gradient(135deg,rgba(232,197,71,0.15),rgba(78,205,196,0.1));padding:28px;border-bottom:1px dashed var(--border);">
+        <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px;">Event Ticket</div>
+        <h2 style="font-size:22px;margin-bottom:4px;">{{ booking.event.title }}</h2>
+        {% if booking.event.category %}
+          <span class="badge badge-gold">{{ booking.event.category.icon }} {{ booking.event.category.name }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Ticket details -->
+      <div style="padding:28px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;">
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:4px;">Booking ID</div>
+            <div style="font-family:monospace;font-weight:700;font-size:18px;color:var(--accent);">{{ booking.short_id }}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:4px;">Status</div>
+            <span class="badge badge-teal">✅ {{ booking.status|capfirst }}</span>
+          </div>
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:4px;">Date</div>
+            <div style="font-weight:500;">{{ booking.event.date|date:"D, M j, Y" }}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:4px;">Time</div>
+            <div style="font-weight:500;">{{ booking.event.time|time:"g:i A" }}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:4px;">Location</div>
+            <div style="font-weight:500;">{{ booking.event.location }}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:4px;">Attendee</div>
+            <div style="font-weight:500;">{{ booking.user.get_full_name|default:booking.user.username }}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:4px;">Tickets</div>
+            <div style="font-weight:500;">{{ booking.quantity }} × ticket</div>
+          </div>
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:4px;">Total Paid</div>
+            <div style="font-weight:700;font-size:18px;color:var(--accent);">
+              {% if booking.total_price == 0 %}Free{% else %}${{ booking.total_price }}{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface2);border-radius:8px;padding:14px;font-size:13px;color:var(--text-muted);margin-bottom:24px;">
+          📧 A confirmation has been saved to your account. Show your Booking ID at the event entrance.
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="{% url 'events:detail' booking.event.pk %}" class="btn btn-outline">View Event</a>
+          <a href="{% url 'dashboard:user_dashboard' %}" class="btn btn-ghost">My Bookings</a>
+          <a href="{% url 'bookings:cancel' booking.booking_id %}" class="btn btn-danger btn-sm" style="margin-left:auto;">Cancel Booking</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

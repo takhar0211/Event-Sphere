@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — EventSphere{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:40px;padding-bottom:80px;">
+  <div class="flex-between mb-6">
+    <div>
+      <div class="badge badge-gold" style="margin-bottom:10px;">🛡️ Admin Panel</div>
+      <h1 class="page-title">Platform Overview</h1>
+      <p class="page-subtitle">Full system monitoring and management</p>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="grid-4" style="margin-bottom:16px;">
+    <div class="stat-card" style="border-color:rgba(232,197,71,0.2);">
+      <div class="stat-icon">👥</div>
+      <div class="stat-label">Total Users</div>
+      <div class="stat-value" style="color:var(--accent);">{{ stats.total_users }}</div>
+    </div>
+    <div class="stat-card" style="border-color:rgba(78,205,196,0.2);">
+      <div class="stat-icon">🎪</div>
+      <div class="stat-label">Organizers</div>
+      <div class="stat-value" style="color:var(--success);">{{ stats.total_organizers }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📅</div>
+      <div class="stat-label">Total Events</div>
+      <div class="stat-value">{{ stats.total_events }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-label">Published Events</div>
+      <div class="stat-value">{{ stats.published_events }}</div>
+    </div>
+  </div>
+  <div class="grid-4" style="margin-bottom:40px;">
+    <div class="stat-card">
+      <div class="stat-icon">🎟️</div>
+      <div class="stat-label">Total Bookings</div>
+      <div class="stat-value">{{ stats.total_bookings }}</div>
+    </div>
+    <div class="stat-card" style="border-color:rgba(232,197,71,0.2);">
+      <div class="stat-icon">💰</div>
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-value" style="color:var(--accent);">${{ stats.total_revenue }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📆</div>
+      <div class="stat-label">Events Today</div>
+      <div class="stat-value">{{ stats.events_today }}</div>
+    </div>
+    <div class="stat-card">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Quick Links</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <a href="{% url 'dashboard:admin_users' %}" class="btn btn-outline btn-sm">Manage Users</a>
+        <a href="{% url 'dashboard:admin_events' %}" class="btn btn-outline btn-sm">Manage Events</a>
+        <a href="{% url 'dashboard:admin_bookings' %}" class="btn btn-outline btn-sm">All Bookings</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="gap:28px;margin-bottom:28px;">
+    <!-- Recent Bookings -->
+    <div class="card">
+      <div class="card-header flex-between">
+        <h3 style="font-size:18px;">Recent Bookings</h3>
+        <a href="{% url 'dashboard:admin_bookings' %}" class="btn btn-ghost btn-sm">View All</a>
+      </div>
+      <div class="table-wrap" style="border:none;">
+        <table>
+          <thead><tr><th>User</th><th>Event</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for b in recent_bookings %}
+            <tr>
+              <td>{{ b.user.username }}</td>
+              <td>{{ b.event.title|truncatechars:25 }}</td>
+              <td>${{ b.total_price }}</td>
+              <td><span class="badge {% if b.status == 'confirmed' %}badge-teal{% else %}badge-red{% endif %}">{{ b.status|capfirst }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Category Revenue -->
+    <div class="card">
+      <div class="card-header"><h3 style="font-size:18px;">Revenue by Category</h3></div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:16px;">
+        {% for cs in category_stats %}
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:14px;">{{ cs.category.icon }} {{ cs.category.name }}</span>
+            <span style="font-size:14px;font-weight:600;color:var(--accent);">${{ cs.revenue }}</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" style="width:{{ cs.bookings|default:0 }}%"></div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">{{ cs.bookings }} booking{{ cs.bookings|pluralize }}</div>
+        </div>
+        {% empty %}
+          <p style="color:var(--text-muted);font-size:14px;">No revenue data yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Events -->
+  <div class="card">
+    <div class="card-header flex-between">
+      <h3 style="font-size:18px;">Recent Events</h3>
+      <a href="{% url 'dashboard:admin_events' %}" class="btn btn-ghost btn-sm">View All</a>
+    </div>
+    <div class="table-wrap" style="border:none;">
+      <table>
+        <thead><tr><th>Title</th><th>Organizer</th><th>Category</th><th>Date</th><th>Tickets Sold</th><th>Revenue</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for event in all_events %}
+          <tr>
+            <td><a href="{% url 'events:detail' event.pk %}">{{ event.title|truncatechars:30 }}</a></td>
+            <td>{{ event.organizer.username }}</td>
+            <td>{% if event.category %}{{ event.category.icon }} {{ event.category.name }}{% else %}—{% endif %}</td>
+            <td>{{ event.date|date:"M j, Y" }}</td>
+            <td>{{ event.tickets_sold }}/{{ event.max_attendees }}</td>
+            <td>${{ event.revenue }}</td>
+            <td><span class="badge {% if event.status == 'published' %}badge-teal{% elif event.status == 'draft' %}badge-gray{% else %}badge-red{% endif %}">{{ event.status|capfirst }}</span></td>
+            <td style="display:flex;gap:6px;">
+              <a href="{% url 'events:edit' event.pk %}" class="btn btn-outline btn-sm">Edit</a>
+              <a href="{% url 'events:delete' event.pk %}" class="btn btn-danger btn-sm">Del</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

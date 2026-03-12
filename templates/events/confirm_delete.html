@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Delete Event — EventSphere{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:80px;padding-bottom:80px;max-width:500px;">
+  <div class="card card-body text-center" style="padding:48px;">
+    <div style="font-size:56px;margin-bottom:24px;">🗑️</div>
+    <h2 style="margin-bottom:12px;">Delete Event?</h2>
+    <p style="color:var(--text-muted);margin-bottom:8px;">You're about to permanently delete:</p>
+    <p style="font-weight:600;font-size:18px;margin-bottom:24px;color:var(--accent);">{{ event.title }}</p>
+    <div class="alert alert-error" style="text-align:left;">
+      <span class="alert-icon">⚠️</span>
+      <span>This will also cancel all {{ event.bookings.count }} existing booking{{ event.bookings.count|pluralize }}. This action cannot be undone.</span>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;">
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Delete Event</button>
+      </form>
+      <a href="{% url 'events:detail' event.pk %}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

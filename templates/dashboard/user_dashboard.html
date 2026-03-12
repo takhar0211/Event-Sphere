@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard — EventSphere{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:40px;padding-bottom:80px;">
+  <div class="flex-between mb-6">
+    <div>
+      <h1 class="page-title">My Dashboard</h1>
+      <p class="page-subtitle">Welcome back, {{ request.user.first_name|default:request.user.username }}!</p>
+    </div>
+    <a href="{% url 'events:list' %}" class="btn btn-primary">Browse Events →</a>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-4" style="margin-bottom:40px;">
+    <div class="stat-card">
+      <div class="stat-icon">🎟️</div>
+      <div class="stat-label">Total Bookings</div>
+      <div class="stat-value">{{ bookings.count }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📅</div>
+      <div class="stat-label">Upcoming Events</div>
+      <div class="stat-value">{{ upcoming.count }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-label">Events Attended</div>
+      <div class="stat-value">{{ past.count }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💰</div>
+      <div class="stat-label">Total Spent</div>
+      <div class="stat-value">${{ total_spent }}</div>
+    </div>
+  </div>
+
+  <!-- Upcoming Bookings -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-header flex-between">
+      <h3 style="font-size:18px;">Upcoming Events</h3>
+      <span class="badge badge-teal">{{ upcoming.count }}</span>
+    </div>
+    {% if upcoming %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Event</th><th>Date</th><th>Location</th><th>Tickets</th><th>Total</th><th>Booking ID</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            {% for booking in upcoming %}
+            <tr>
+              <td><a href="{% url 'events:detail' booking.event.pk %}" style="font-weight:500;">{{ booking.event.title|truncatechars:40 }}</a></td>
+              <td>{{ booking.event.date|date:"M j, Y" }}</td>
+              <td>{{ booking.event.location|truncatechars:30 }}</td>
+              <td>{{ booking.quantity }}</td>
+              <td>{% if booking.total_price == 0 %}Free{% else %}${{ booking.total_price }}{% endif %}</td>
+              <td><code style="font-size:12px;color:var(--accent);">{{ booking.short_id }}</code></td>
+              <td style="display:flex;gap:6px;">
+                <a href="{% url 'bookings:confirmation' booking.booking_id %}" class="btn btn-success btn-sm">View</a>
+                <a href="{% url 'bookings:cancel' booking.booking_id %}" class="btn btn-danger btn-sm">Cancel</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding:40px;">
+        <div class="empty-icon">📅</div>
+        <p class="empty-desc">No upcoming events. <a href="{% url 'events:list' %}" style="color:var(--accent);">Browse events</a></p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Past Bookings -->
+  {% if past %}
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-header flex-between">
+      <h3 style="font-size:18px;">Past Events</h3>
+      <span class="badge badge-gray">{{ past.count }}</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Event</th><th>Date</th><th>Tickets</th><th>Total</th></tr></thead>
+        <tbody>
+          {% for booking in past %}
+          <tr>
+            <td><a href="{% url 'events:detail' booking.event.pk %}">{{ booking.event.title|truncatechars:40 }}</a></td>
+            <td>{{ booking.event.date|date:"M j, Y" }}</td>
+            <td>{{ booking.quantity }}</td>
+            <td>{% if booking.total_price == 0 %}Free{% else %}${{ booking.total_price }}{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Cancelled -->
+  {% if cancelled %}
+  <div class="card">
+    <div class="card-header flex-between">
+      <h3 style="font-size:18px;">Cancelled Bookings</h3>
+      <span class="badge badge-red">{{ cancelled.count }}</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Event</th><th>Cancelled On</th><th>Tickets</th></tr></thead>
+        <tbody>
+          {% for booking in cancelled %}
+          <tr>
+            <td>{{ booking.event.title|truncatechars:40 }}</td>
+            <td>{{ booking.cancelled_at|date:"M j, Y"|default:"—" }}</td>
+            <td>{{ booking.quantity }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

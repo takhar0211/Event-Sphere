@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block title %}{{ event.title }} — EventSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:40px;padding-bottom:80px;">
+  <div class="grid-2-1" style="gap:40px;">
+
+    <!-- MAIN CONTENT -->
+    <div>
+      <!-- Hero image -->
+      {% if event.image %}
+        <img src="{{ event.image.url }}" alt="{{ event.title }}" style="width:100%;height:380px;object-fit:cover;border-radius:var(--radius-lg);margin-bottom:32px;">
+      {% else %}
+        <div style="width:100%;height:280px;background:linear-gradient(135deg,var(--surface2),var(--surface3));border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:80px;margin-bottom:32px;">
+          {{ event.category.icon|default:'🎪' }}
+        </div>
+      {% endif %}
+
+      <!-- Header -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+        {% if event.category %}
+          <a href="{% url 'events:by_category' event.category.slug %}" class="badge badge-gold" style="text-decoration:none;">{{ event.category.icon }} {{ event.category.name }}</a>
+        {% endif %}
+        {% if event.is_featured %}<span class="badge badge-teal">⭐ Featured</span>{% endif %}
+        {% if event.is_sold_out %}<span class="badge badge-red">🔴 Sold Out</span>{% endif %}
+        {% if event.is_past %}<span class="badge badge-gray">Past Event</span>{% endif %}
+        <span class="badge badge-gray">{{ event.status|capfirst }}</span>
+      </div>
+
+      <h1 style="font-size:clamp(28px,4vw,42px);margin-bottom:24px;">{{ event.title }}</h1>
+
+      <!-- Meta grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;gap:12px;align-items:center;">
+          <span style="font-size:24px;">📅</span>
+          <div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:2px;">Date</div>
+            <div style="font-weight:500;">{{ event.date|date:"l, F j, Y" }}</div>
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;gap:12px;align-items:center;">
+          <span style="font-size:24px;">🕐</span>
+          <div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:2px;">Time</div>
+            <div style="font-weight:500;">{{ event.time|time:"g:i A" }}{% if event.end_time %} – {{ event.end_time|time:"g:i A" }}{% endif %}</div>
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;gap:12px;align-items:center;">
+          <span style="font-size:24px;">📍</span>
+          <div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:2px;">Location</div>
+            <div style="font-weight:500;">{{ event.location }}</div>
+            {% if event.venue_name %}<div style="font-size:13px;color:var(--text-muted);">{{ event.venue_name }}</div>{% endif %}
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;gap:12px;align-items:center;">
+          <span style="font-size:24px;">👤</span>
+          <div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:2px;">Organizer</div>
+            <div style="font-weight:500;">{{ event.organizer.get_full_name|default:event.organizer.username }}</div>
+            {% if event.organizer.organization %}<div style="font-size:13px;color:var(--text-muted);">{{ event.organizer.organization }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="card card-body" style="margin-bottom:24px;">
+        <h3 style="margin-bottom:16px;">About This Event</h3>
+        <div style="color:var(--text-sub);line-height:1.8;white-space:pre-wrap;">{{ event.description }}</div>
+      </div>
+
+      <!-- Organizer actions -->
+      {% if request.user == event.organizer or request.user.is_admin_user %}
+        <div style="display:flex;gap:12px;padding:20px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);">
+          <span style="color:var(--text-muted);font-size:14px;align-self:center;">Organizer Controls:</span>
+          <a href="{% url 'events:edit' event.pk %}" class="btn btn-outline btn-sm">✏️ Edit</a>
+          <a href="{% url 'events:delete' event.pk %}" class="btn btn-danger btn-sm">🗑️ Delete</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- SIDEBAR -->
+    <div>
+      <!-- Booking card -->
+      <div class="card" style="position:sticky;top:calc(var(--nav-h) + 20px);">
+        <div class="card-body">
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:20px;">
+            {% if event.ticket_price == 0 %}
+              <div style="font-family:'DM Serif Display',serif;font-size:36px;color:var(--success);">Free</div>
+            {% else %}
+              <div style="font-family:'DM Serif Display',serif;font-size:36px;color:var(--accent);">${{ event.ticket_price }}</div>
+              <div style="font-size:14px;color:var(--text-muted);">per ticket</div>
+            {% endif %}
+          </div>
+
+          <!-- Availability -->
+          <div style="margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-muted);margin-bottom:8px;">
+              <span>{{ event.tickets_sold }} / {{ event.max_attendees }} tickets sold</span>
+              <span>{{ event.occupancy_percent }}%</span>
+            </div>
+            <div class="progress" style="height:8px;">
+              <div class="progress-bar {% if event.occupancy_percent >= 90 %}danger{% elif event.occupancy_percent >= 60 %}{% else %}success{% endif %}"
+                   style="width:{{ event.occupancy_percent }}%;"></div>
+            </div>
+            <div style="font-size:13px;margin-top:8px;">
+              {% if event.is_sold_out %}
+                <span style="color:var(--danger);">😔 Sold out</span>
+              {% else %}
+                <span style="color:var(--success);">✅ {{ event.available_tickets }} tickets available</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          {% if event.is_past %}
+            <div class="sold-out-banner">This event has already ended.</div>
+          {% elif event.is_sold_out %}
+            <div class="sold-out-banner">⚡ Sold out! Check similar events below.</div>
+          {% elif user_booking %}
+            <div style="background:rgba(78,205,196,0.1);border:1px solid rgba(78,205,196,0.25);border-radius:8px;padding:16px;margin-bottom:16px;">
+              <div style="color:var(--success);font-weight:600;margin-bottom:4px;">✅ You're booked!</div>
+              <div style="font-size:13px;color:var(--text-muted);">Booking ID: {{ user_booking.short_id }}</div>
+              <div style="font-size:13px;color:var(--text-muted);">Qty: {{ user_booking.quantity }} ticket{{ user_booking.quantity|pluralize }}</div>
+            </div>
+            <a href="{% url 'bookings:confirmation' user_booking.booking_id %}" class="btn btn-success" style="width:100%;justify-content:center;">View My Ticket</a>
+            <a href="{% url 'bookings:cancel' user_booking.booking_id %}" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:8px;">Cancel Booking</a>
+          {% elif user.is_authenticated %}
+            <form method="post" action="{% url 'bookings:book' event.pk %}">
+              {% csrf_token %}
+              <div class="form-group">
+                <label class="form-label">Number of Tickets</label>
+                <select name="quantity" class="form-control">
+                  {% for i in "12345"|make_list %}
+                    <option value="{{ forloop.counter }}">{{ forloop.counter }} ticket{{ forloop.counter|pluralize }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;">
+                🎟️ Book Now
+              </button>
+            </form>
+          {% else %}
+            <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;">
+              Login to Book
+            </a>
+            <p style="font-size:13px;color:var(--text-muted);text-align:center;margin-top:10px;">
+              Don't have an account? <a href="{% url 'accounts:register' %}" style="color:var(--accent);">Sign up free</a>
+            </p>
+          {% endif %}
+        </div>
+
+        <!-- Quick info -->
+        <div style="padding:16px 24px;border-top:1px solid var(--border);background:var(--surface2);">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:13px;">
+              <span style="color:var(--text-muted);">Event ID</span>
+              <span style="font-family:monospace;font-size:11px;">{{ event.pk|stringformat:"s"|slice:":8"|upper }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;">
+              <span style="color:var(--text-muted);">Created</span>
+              <span>{{ event.created_at|date:"M j, Y" }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIMILAR EVENTS -->
+  {% if similar %}
+    <div style="margin-top:64px;">
+      <h2 style="font-size:28px;margin-bottom:24px;">Similar Events</h2>
+      <div class="grid-3">
+        {% for event in similar %}
+          {% include 'events/_event_card.html' %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

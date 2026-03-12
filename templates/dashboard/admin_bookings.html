@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}All Bookings — Admin{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:40px;padding-bottom:80px;">
+  <div class="flex-between mb-6">
+    <div>
+      <a href="{% url 'dashboard:admin_dashboard' %}" style="color:var(--text-muted);font-size:14px;display:flex;align-items:center;gap:6px;margin-bottom:8px;">← Admin Dashboard</a>
+      <h1 class="page-title">All Bookings</h1>
+      <p class="page-subtitle">{{ bookings.count }} total bookings</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap" style="border:none;">
+      <table>
+        <thead><tr><th>Booking ID</th><th>User</th><th>Event</th><th>Date Booked</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for b in bookings %}
+          <tr>
+            <td><code style="font-size:12px;color:var(--accent);">{{ b.short_id }}</code></td>
+            <td>
+              <div style="font-weight:500;">{{ b.user.get_full_name|default:b.user.username }}</div>
+              <div style="font-size:12px;color:var(--text-muted);">{{ b.user.email }}</div>
+            </td>
+            <td><a href="{% url 'events:detail' b.event.pk %}">{{ b.event.title|truncatechars:35 }}</a></td>
+            <td>{{ b.booked_at|date:"M j, Y g:i A" }}</td>
+            <td>{{ b.quantity }}</td>
+            <td>${{ b.total_price }}</td>
+            <td>
+              <span class="badge {% if b.status == 'confirmed' %}badge-teal{% elif b.status == 'cancelled' %}badge-red{% else %}badge-orange{% endif %}">
+                {{ b.status|capfirst }}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

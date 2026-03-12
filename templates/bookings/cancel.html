@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Cancel Booking — EventSphere{% endblock %}
+{% block content %}
+<div style="min-height:60vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;">
+  <div style="width:100%;max-width:480px;">
+    <div class="card card-body text-center" style="padding:48px;">
+      <div style="font-size:56px;margin-bottom:24px;">🚫</div>
+      <h2 style="margin-bottom:12px;">Cancel Booking?</h2>
+      <p style="color:var(--text-muted);margin-bottom:24px;">
+        You're cancelling your booking for <strong style="color:var(--text);">{{ booking.event.title }}</strong>
+        on {{ booking.event.date|date:"M j, Y" }}.
+      </p>
+      <div class="alert alert-warning" style="text-align:left;margin-bottom:24px;">
+        <span class="alert-icon">⚠️</span>
+        <span>{{ booking.quantity }} ticket{{ booking.quantity|pluralize }} will be released back. This cannot be undone.</span>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+        </form>
+        <a href="{% url 'dashboard:user_dashboard' %}" class="btn btn-ghost">Keep Booking</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

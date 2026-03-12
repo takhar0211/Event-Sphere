@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Manage Users — Admin{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:40px;padding-bottom:80px;">
+  <div class="flex-between mb-6">
+    <div>
+      <a href="{% url 'dashboard:admin_dashboard' %}" style="color:var(--text-muted);font-size:14px;display:flex;align-items:center;gap:6px;margin-bottom:8px;">← Admin Dashboard</a>
+      <h1 class="page-title">Manage Users</h1>
+      <p class="page-subtitle">{{ users.count }} total users registered</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap" style="border:none;">
+      <table>
+        <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Joined</th><th>Bookings</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--accent);flex-shrink:0;">
+                  {{ u.first_name|first|upper|default:u.username|first|upper }}
+                </div>
+                <div>
+                  <div style="font-weight:500;">{{ u.get_full_name|default:u.username }}</div>
+                  <div style="font-size:12px;color:var(--text-muted);">@{{ u.username }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ u.email }}</td>
+            <td>
+              <span class="badge {% if u.role == 'admin' or u.is_superuser %}badge-gold{% elif u.role == 'organizer' %}badge-teal{% else %}badge-gray{% endif %}">
+                {{ u.role|upper }}
+              </span>
+            </td>
+            <td>{{ u.date_joined|date:"M j, Y" }}</td>
+            <td>{{ u.bookings.count }}</td>
+            <td>
+              <span class="badge {% if u.is_active %}badge-teal{% else %}badge-red{% endif %}">
+                {% if u.is_active %}Active{% else %}Inactive{% endif %}
+              </span>
+            </td>
+            <td>
+              {% if u != request.user %}
+                <form method="post" action="{% url 'dashboard:toggle_user' u.pk %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn {% if u.is_active %}btn-danger{% else %}btn-success{% endif %} btn-sm">
+                    {% if u.is_active %}Deactivate{% else %}Activate{% endif %}
+                  </button>
+                </form>
+              {% else %}
+                <span style="font-size:13px;color:var(--text-muted);">You</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
